@@ -1,0 +1,87 @@
+.suite-volume-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  &__bar {
+    width: 80px;
+    height: 4px;
+
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    background: linear-gradient(
+      to right,
+      var(--c--theme--colors--greyscale-600) 0%,
+      var(--c--theme--colors--greyscale-600) var(--volume-percentage, 0%),
+      #e9ecef var(--volume-percentage, 0%),
+      #e9ecef 100%
+    );
+
+    &:hover {
+      background: linear-gradient(
+        to right,
+        var(--c--theme--colors--primary-800) 0%,
+        var(--c--theme--colors--primary-800) var(--volume-percentage, 0%),
+        #e9ecef var(--volume-percentage, 0%),
+        #e9ecef 100%
+      );
+      &::-webkit-slider-thumb {
+        transform: scale(1.8);
+        background: var(
+          --c--theme--colors--primary-800
+        ); // TODO: Replace with new ui-kit color
+      }
+      &::-moz-range-thumb:hover {
+        transform: scale(1.8);
+        background: var(
+          --c--theme--colors--primary-800
+        ); // TODO: Replace with new ui-kit color
+      }
+    }
+
+    &::-webkit-slider-thumb {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 8px;
+      height: 8px;
+      background: var(
+        --c--theme--colors--greyscale-600
+      ); // TODO: Replace with new ui-kit color
+      border-radius: 50%;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    }
+
+    &::-moz-range-thumb {
+      width: 14px;
+      height: 14px;
+      background: var(
+        --c--theme--colors--primary-800
+      ); // TODO: Replace with new ui-kit color
+      border-radius: 50%;
+      cursor: pointer;
+      border: none;
+      transition: transform 0.2s ease;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    }
+  }
+
+  &__btn-mute {
+    background: transparent;
+    color: var(--c--theme--colors--greyscale-600) !important;
+    padding: 8px;
+    min-width: 40px;
+    height: 40px;
+    border-radius: 6px !important;
+    transition: all 0.2s ease !important;
+
+    &:hover {
+      background: var(--c--theme--colors--greyscale-100) !important;
+      border-color: var(--c--theme--colors--greyscale-200) !important;
+    }
+  }
+}

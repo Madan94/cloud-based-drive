@@ -1,0 +1,32 @@
+.modal__move {
+  &__header {
+    display: flex;
+    flex-direction: column;
+    gap: var(--c--theme--spacings--sm);
+  }
+
+  &__title {
+    font-size: var(--c--theme--font--sizes--h6);
+    font-weight: 700;
+    color: var(--c--theme--colors--greyscale-1000);
+  }
+  &__description {
+    font-size: var(--c--theme--font--sizes--body-small);
+    color: var(--c--theme--colors--greyscale-600);
+    font-weight: 400;
+  }
+
+  &__footer {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--c--theme--spacings--base);
+    padding: 0 var(--c--theme--spacings--base);
+    padding-bottom: var(--c--theme--spacings--base);
+  }
+
+  &__explorer {
+    padding: 0 var(--c--theme--spacings--md);
+  }
+}
