@@ -2,9 +2,6 @@
 
 A modern, self-hosted file storage and collaboration platform built with Django and Next.js.
 
-<p align="center">
-  <img alt="Drive banner" src="/docs/assets/banner-drive.png" width="100%" />
-</p>
 
 ## Why use Local Drive ❓
 
@@ -127,15 +124,3 @@ You can then login with sub `admin@example.com` and password `admin`.
 - **Docker** and **Docker Compose** for containerization
 - **Nginx** as reverse proxy
 - **MinIO** for S3-compatible storage
-
-## Contributing 🙌
-
-This project is intended to be community-driven, so please, do not hesitate to get in touch if you have any question related to our implementation or design decisions.
-
-## License 📝
-
-This work is released under the MIT License (see [LICENSE](./LICENSE)).
-
-## Credits ❤️
-
-Local Drive is built on top of [Django Rest Framework](https://www.django-rest-framework.org/), [Next.js](https://nextjs.org/), and many other open-source projects. We thank the contributors of all these projects for their awesome work!
