@@ -2,8 +2,11 @@ import {
   createContext,
   useContext,
   useState,
+  useEffect,
   type ReactElement,
   type ReactNode,
+  Component,
+  type ErrorInfo,
 } from "react";
 import type { NextPage } from "next";
 import type { AppProps } from "next/app";
@@ -90,6 +93,77 @@ export const useAppContext = () => {
   return context;
 };
 
+/**
+ * Check if an error originates from a Chrome extension
+ */
+const isChromeExtensionError = (error: Error | string | unknown): boolean => {
+  if (!error) return false;
+  
+  const errorString = typeof error === "string" ? error : error instanceof Error ? error.toString() : String(error);
+  const stack = error instanceof Error ? error.stack || "" : "";
+  const message = error instanceof Error ? error.message : errorString;
+  
+  // Check if error is from chrome-extension:// or moz-extension:// URLs
+  const isExtensionUrl = 
+    errorString.includes("chrome-extension://") ||
+    stack.includes("chrome-extension://") ||
+    errorString.includes("moz-extension://") ||
+    stack.includes("moz-extension://");
+  
+  // Check for specific MetaMask/Web3 wallet error patterns
+  const isWalletError = 
+    message.includes("Cannot destructure property") && 
+    (message.includes("e.data") || message.includes("data.target"));
+  
+  return isExtensionUrl || isWalletError;
+};
+
+/**
+ * Error Boundary component to catch React errors from extensions
+ */
+class ErrorBoundary extends Component<
+  { children: ReactNode },
+  { hasError: boolean }
+> {
+  constructor(props: { children: ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    // If error is from a Chrome extension, don't show error boundary
+    if (isChromeExtensionError(error)) {
+      return null;
+    }
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    // Ignore errors from Chrome extensions
+    if (isChromeExtensionError(error)) {
+      console.warn("Ignored error from browser extension:", error.message);
+      return;
+    }
+    
+    // Log other errors for debugging
+    console.error("Error caught by boundary:", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      // You can customize this error UI
+      return (
+        <div style={{ padding: "20px", textAlign: "center" }}>
+          <h2>Something went wrong</h2>
+          <p>Please refresh the page or contact support if the problem persists.</p>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
 export default function MyApp({
   Component,
   pageProps,
@@ -116,6 +190,40 @@ const MyAppInner = ({ Component, pageProps }: AppPropsWithLayout) => {
     () => router.pathname.startsWith("/sdk"),
     [router.pathname]
   );
+
+  // Set up global error handlers to filter out Chrome extension errors
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    // Handle unhandled promise rejections
+    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+      const error = event.reason;
+      if (isChromeExtensionError(error)) {
+        event.preventDefault();
+        console.warn("Ignored unhandled rejection from browser extension:", error);
+        return;
+      }
+    };
+
+    // Handle general errors
+    const handleError = (event: ErrorEvent) => {
+      const error = event.error || event.message;
+      if (isChromeExtensionError(error)) {
+        event.preventDefault();
+        console.warn("Ignored error from browser extension:", error);
+        return;
+      }
+    };
+
+    window.addEventListener("unhandledrejection", handleUnhandledRejection);
+    window.addEventListener("error", handleError);
+
+    return () => {
+      window.removeEventListener("unhandledrejection", handleUnhandledRejection);
+      window.removeEventListener("error", handleError);
+    };
+  }, []);
+
   return (
     <>
       <Head>
@@ -126,19 +234,21 @@ const MyAppInner = ({ Component, pageProps }: AppPropsWithLayout) => {
           type="image/png"
         />
       </Head>
-      <QueryClientProvider client={queryClient}>
-        <CunninghamProvider
-          currentLocale={capitalizeRegion(i18n.language)}
-          theme={theme}
-        >
-          <ConfigProvider>
-            <AnalyticsProvider>
-              {getLayout(<Component {...pageProps} />)}
-              <ResponsiveDivs />
-            </AnalyticsProvider>
-          </ConfigProvider>
-        </CunninghamProvider>
-      </QueryClientProvider>
+      <ErrorBoundary>
+        <QueryClientProvider client={queryClient}>
+          <CunninghamProvider
+            currentLocale={capitalizeRegion(i18n.language)}
+            theme={theme}
+          >
+            <ConfigProvider>
+              <AnalyticsProvider>
+                {getLayout(<Component {...pageProps} />)}
+                <ResponsiveDivs />
+              </AnalyticsProvider>
+            </ConfigProvider>
+          </CunninghamProvider>
+        </QueryClientProvider>
+      </ErrorBoundary>
     </>
   );
 };
